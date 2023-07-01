@@ -1,6 +1,6 @@
 # Neural Network Project
 ## Learning to play Connect4 using a Recurrent Neural Network
-This project focuses on the idea that the game of *Connect 4* - as well as many other table or puzzle games - consists in just a sequence of moves. 
+This project focuses on the idea that the game of *Connect4* - as well as many other table or puzzle games - consists in just a sequence of moves. 
 To be exact, each player realizes his/her own idea of this sequence, deciding which move to make in order to win the game.\
 Thanks to this simple and straight-forward structure, I decided to evaluate the performance of various Machine Learning models at this poppular game, 
 seeing them just as normal players. The main objective is to train a Recurrent Neural Network (RNN), composed of convolutional layers too, in order to catch 
