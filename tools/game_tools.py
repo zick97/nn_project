@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from player_tools import *
 
 #---------------------------------------------------------------------------------------------
 class Player(object):
