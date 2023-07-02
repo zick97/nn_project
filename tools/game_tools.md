@@ -1,5 +1,5 @@
 ### Game Tools
-In this file you can find the whole building process of the game *Connect4*, from the implementation of the basic rules to the function that instantiates and simulates multiple games. You can also find the `HumanPlayer()` class, that gives the user the opportunity to play the game, as well as the two basic hard-coded player classes: `RandomPlayer()`, which plays a random game strategy, and `SimplePlayer()`, which plays a simple straight-forward game strategy.\
+In this file you can find the whole building process of the game *Connect4*, from the implementation of the basic rules to the function that instantiates and simulates multiple games. You can also find the `HumanPlayer()` class, that gives the user the opportunity to play the game, as well as the basic hard-coded player class `RandomPlayer()`, which plays a random game strategy.\
 \
 \
 __*Player class*__\
@@ -15,7 +15,7 @@ Notice that the player's move (from the *choice* variable derived from `Player.c
 __*First Player*: Human__\
 The `HumanPlayer()` move is decided by the user itself.\
 \
-__Second Player: *Random*__\
+__*Second Player*: Random__\
 The first player is a newbie and does not really know how to play. Therefore, it is playing randomly.\
 The only constraints are provided by the conditions written inside the `Board()` class.\
 \
