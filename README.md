@@ -11,4 +11,4 @@ model will learn sub-optimal game strategies. I then decided to hard-code a simp
 I let two RNNs play against each other to generate a large dataset, perhaps containing good patterns and "intelligent" moves, repeating the process multiple times.\
 \
 The **results** are found in the `main.ipynb` file. For coding details and model architectures, feel free to read (and use) every other file in the repository. Detailed code
-descriptions and instructions can be found in the files named after the `.py` files.
+descriptions and instructions can be found in the files named after the `.py` files, inside the `tools` folder.
