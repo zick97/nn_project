@@ -2,17 +2,6 @@ import numpy as np
 import pandas as pd
 from tools.player_tools import *
 
-#---------------------------------------------------------------------------------------------
-class Player(object):
-    def __init__(self, p=1, name='Player1'):
-        self.player = p                     # number ID to produce the grid markers
-        self.name = name                    # the name is used only for displaying purposes and to avoid misunderstandings
-        if self.player == 1:
-            self.marker = 1
-        else:
-            self.marker = -1
-        self.target = int(4 * self.marker)  # +4 for player 1 and -4 for player 2
-
 #---------------------------------------------------------------------------------------------        
 class Board(object):
     def __init__(self, grid_size=(6,7)):
@@ -177,24 +166,6 @@ class Board(object):
         print(txt)
 
 #---------------------------------------------------------------------------------------------       
-class HumanPlayer(Player):
-    def __init__(self, p=1, name='Human'):
-        Player.__init__(self, p, name)
-        self.player_type = 'Human'
-
-    def move(self, Board):
-        self.choice = int(input('Digit a column number to place your token.'))
-        
-class RandomPlayer(Player):
-    def __init__(self, p=1, name='Random'):
-        Player.__init__(self, p, name)
-        self.player_type = 'RandomAI'
-
-    def move(self, Board):
-        valid_columns = [i for i, v in enumerate(Board.column_n_pos) if v != 0]
-        self.choice = np.random.choice(valid_columns)
-
-#---------------------------------------------------------------------------------------------       
 import math
 from IPython.display import clear_output
 
@@ -209,25 +180,31 @@ class Game(object):
                             'choice' : [],  # dictionary used to save the game
                             'grid' : []}
 
-        if (player1 != None) & (player2 != None):
-                name1 = player1
-                name2 = player2
-        else:
-                name1 = 'Player 1'
-                name2 = 'Player 2'
-
         if game_type=='user-user':
-            p1 = HumanPlayer(name=name1, p=1)
-            p2 = HumanPlayer(name=name2, p=-1)
+            p1 = HumanPlayer(name=player1, p=1)
+            p2 = HumanPlayer(name=player2, p=-1)
         
-        if game_type=='user-random':
-            p1 = HumanPlayer(name=name1, p=1)
-            p2 = RandomPlayer(name=name2, p=2)
+        elif game_type=='user-random':
+            p1 = HumanPlayer(name=player1, p=1)
+            p2 = RandomPlayer(name=player2, p=-1)
 
-        if game_type=='random-random':
-            p1 = RandomPlayer(name=name1, p=1)
-            p2 = RandomPlayer(name=name2, p=2)
+        elif game_type=='random-random':
+            p1 = RandomPlayer(name=player1, p=1)
+            p2 = RandomPlayer(name=player2, p=-1)
 
+        elif game_type=='user-simple':
+            p1 = HumanPlayer(name=player1, p=1)
+            p2 = SimplePlayer(name=player2, p=-1)
+
+        elif game_type=='simple-random':
+            p1 = SimplePlayer(name=player1, p=1)
+            p2 = RandomPlayer(name=player2, p=-1)
+
+        if p1.name == None:
+            p1.name = p1.player_type
+        if p2.name == None:
+            p2.name = p2.player_type
+            
         # the starting player is always chosen at random 
         self.player_list = [p1, p2]
         np.random.shuffle(self.player_list)
