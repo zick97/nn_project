@@ -86,3 +86,49 @@ class SimplePlayer(Player):
             self.choice = column
         else:
             self.choice = np.random.choice(valid_columns)
+
+#---------------------------------------------------------------------------------------------       
+pd.options.mode.chained_assignment = None  # default='warn'
+def padding(dataset):
+    df = pd.DataFrame()
+    # getting the mean duration of each game
+    mean_duration = int(dataset['grid'].groupby(dataset.index).count().mean())
+    # creating the padding row: it's just an empty board with a random choice
+    padding_row = dataset[:1]
+    padding_row['grid'] = [np.zeros(shape=dataset['grid'].iloc[0].shape)]
+    padding_row['choice'] = np.int64(np.random.randint(0,7))
+    # now, for each sequence shorter than mean_duration, we append (mean_duration - len(sequence)) 
+    # padding rows at the beginning of the sequence
+    for _, sequence in dataset.groupby(dataset.index):
+        difference = abs(mean_duration - len(sequence))
+        if difference > 0:
+            padding_rows = pd.DataFrame(np.repeat(padding_row.values, difference, axis=0),
+                                        index=[sequence.index[0]]*difference)   # repeating padding rows
+            padding_rows.columns = padding_row.columns
+            sequence = pd.concat([padding_rows, sequence], axis=0)
+        df = pd.concat([df, sequence])
+    return df, mean_duration
+
+#---------------------------------------------------------------------------------------------       
+import tensorflow as tf
+def df_to_tensor(dataset):
+    df = dataset.copy()
+    # creating a new column that represents the game winner for each game
+    df['winner'] = df['player'].groupby(df.index).last()
+    # selecting only the rows where the player corresponds to the winner
+    df = df[df['player'] == df['winner']]
+    df.drop(columns=['player', 'winner', 'move'], inplace=True)
+    # stacking all the columns to get just one feature to train the RNN with 
+    df['grid'] = df[df.columns[1:]].apply(lambda row: np.stack(row), axis=1)
+    # dropping all the single columns 
+    df.drop(columns=df.columns[1:-1], inplace=True)
+    # padding inside the dataframe
+    df, mean_duration = padding(df)
+    # we are going to use the last mean_duration moves for each game
+    df = df.groupby(df.index).tail(mean_duration)
+    # with the following procedure, we build the tensorflow datasets stacking together all the column vectors
+    # for the features dataset and all the moves for the target dataset
+    features = tf.ragged.stack(list(df['grid']))
+    target = tf.convert_to_tensor(list(df['choice']))
+    df = tf.data.Dataset.from_tensor_slices((features, target))
+    return df
