@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 #---------------------------------------------------------------------------------------------
 class Player(object):
     def __init__(self, p=1, name='Player1'):

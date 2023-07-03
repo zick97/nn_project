@@ -199,11 +199,15 @@ class Game(object):
         elif game_type=='simple-random':
             p1 = SimplePlayer(name=player1, p=1)
             p2 = RandomPlayer(name=player2, p=-1)
+        
+        elif game_type=='simple-simple':
+            p1 = SimplePlayer(name=player1, p=1)
+            p2 = SimplePlayer(name=player2, p=-1)
 
         if p1.name == None:
-            p1.name = p1.player_type
+            p1.name = f'{p1.player_type}_1'
         if p2.name == None:
-            p2.name = p2.player_type
+            p2.name = f'{p2.player_type}_2'
             
         # the starting player is always chosen at random 
         self.player_list = [p1, p2]
@@ -263,7 +267,7 @@ class Game(object):
 #---------------------------------------------------------------------------------------------
 from tqdm import tqdm
 # simulating N AI-AI games
-def simulation(n=100, game_type='random-random'):
+def simulation(n=100, game_type='random-random', save_csv=True):
     dataset = pd.DataFrame()
     i = 0
     if n <= 1000:
@@ -293,8 +297,8 @@ def simulation(n=100, game_type='random-random'):
                 df = pd.concat([df, game])
             j += i + 1
             dataset = pd.concat([dataset, df])
-        
-    print('Saving: ...')
-    dataset.to_csv(f'simulations/simulation_{game_type}_{n}.csv')
+    if save_csv:
+        print('Saving: ...')
+        dataset.to_csv(f'simulations/simulation_{game_type}_{n}.csv')
     # rearrange the columns order
     return dataset[['player', 'move', 'choice', 'col_0', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6']]
