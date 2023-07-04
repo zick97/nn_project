@@ -267,7 +267,7 @@ class Game(object):
 #---------------------------------------------------------------------------------------------
 from tqdm import tqdm
 # simulating N AI-AI games
-def simulation(n=100, game_type='random-random', save_csv=True):
+def simulation(n=100, game_type='random-random', save_json=True):
     dataset = pd.DataFrame()
     i = 0
     if n <= 1000:
@@ -297,8 +297,20 @@ def simulation(n=100, game_type='random-random', save_csv=True):
                 df = pd.concat([df, game])
             j += i + 1
             dataset = pd.concat([dataset, df])
-    if save_csv:
+    # i decided to save the dataframe into .json format in order to preserve the dtype inside the dataframe,
+    # since most of the values are arrays that get converted to strings using the default pd.to_csv() function
+    if save_json:
         print('Saving: ...')
-        dataset.to_csv(f'simulations/simulation_{game_type}_{n}.csv')
-    # rearrange the columns order
-    return dataset[['player', 'move', 'choice', 'col_0', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6']]
+        # rearrange the columns order
+        dataset = dataset[['player', 'move', 'choice', 'col_0', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6']]
+        dataset.reset_index().to_json(f'simulations/simulation_{game_type}_{n}.json')
+        #dataset.to_csv(f'simulations/simulation_{game_type}_{n}.csv')
+    return dataset
+
+#---------------------------------------------------------------------------------------------
+def read_json(path):
+    dataset = pd.read_json(path)
+    index = dataset['index']
+    dataset.drop(columns=['index'], inplace=True)
+    dataset.index = index
+    return dataset
