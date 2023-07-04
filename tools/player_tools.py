@@ -129,6 +129,7 @@ def df_to_tensor(dataset):
     # for the features dataset and all the final moves for the target dataset
     features = tf.data.Dataset.from_tensor_slices(list(df['grid']))
     features = features.batch(mean_duration)
+    # taking the last move (the winning one) as target
     targets = tf.data.Dataset.from_tensor_slices(list(df['choice'].groupby(df.index).tail(1)))
     df = tf.data.Dataset.zip((features, targets))
     return df
