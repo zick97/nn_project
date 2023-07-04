@@ -116,11 +116,7 @@ def padding(dataset):
 import tensorflow as tf
 def df_to_tensor(dataset):
     df = dataset.copy()
-    # creating a new column that represents the game winner for each game
-    df['winner'] = df['player'].groupby(df.index).last()
-    # selecting only the rows where the player corresponds to the winner
-    df = df[df['player'] == df['winner']]
-    df.drop(columns=['player', 'winner', 'move'], inplace=True)
+    df.drop(columns=['player', 'move'], inplace=True)
     # stacking all the columns to get just one feature to train the RNN with 
     df['grid'] = df[df.columns[1:]].apply(lambda x: np.concatenate(x), axis=1)
     # dropping all the single columns 

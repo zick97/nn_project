@@ -267,7 +267,7 @@ class Game(object):
 #---------------------------------------------------------------------------------------------
 from tqdm import tqdm
 # simulating N AI-AI games
-def simulation(n=100, game_type='random-random', save_json=True):
+def simulation(n=100, game_type='random-random', save_json=False):
     dataset = pd.DataFrame()
     i = 0
     if n <= 1000:
