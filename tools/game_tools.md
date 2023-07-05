@@ -29,9 +29,10 @@ Note that this class requires a `game_type` string argument, defined as follows:
 4. *`user-simple`*: user versus simple hard-coded player,
 5. *`simple-random`*: simple hard-coded player versus random player,
 6. *`simple-simple`*: two simple hard-coded players playing against each other,
-7. *`rnn-simple`*: recurrent network against simple hard-coded player,
-8. *`rnn-rnn`*: two recurrent networks against each other (the core of the training process),
-9. *`user-rnn`*: the final goal of this project $\rightarrow$ human player against a well-trained neural network.
+7. *`rnn-random`*: recurrent network against random player,
+8. *`rnn-simple`*: recurrent network against simple hard-coded player,
+9. *`rnn-rnn`*: two recurrent networks against each other (the core of the training process),
+10. *`user-rnn`*: the final goal of this project $\rightarrow$ human player against a well-trained neural network.
 
 \
 __*Building the dataset*__\

@@ -87,6 +87,21 @@ class SimplePlayer(Player):
         else:
             self.choice = np.random.choice(valid_columns)
 
+class RNNPlayer(Player):
+    def __init__(self, p=1, name='RNN', model=tf.keras.Sequential()):
+        Player.__init__(self, p, name)
+        self.player_type = 'RecurrentAI'
+        self.model = model
+    
+    def move(self, Board, batch):  # note that we use the entire batch to make the predictions
+        valid_columns = [i for i, v in enumerate(Board.column_n_pos) if v != 0]
+        # column probabilities on the current sequence
+        probas = self.model.predict(batch, verbose=0)[-1:][0]
+        # sort in descending order the probas array and get the index list
+        choices = np.argsort(-probas)
+        # take the first element of the list that is also in the valid_columns list
+        self.choice = choices[np.isin(choices, valid_columns)][0] 
+
 from tqdm import tqdm
 #---------------------------------------------------------------------------------------------       
 pd.options.mode.chained_assignment = None  # default='warn'

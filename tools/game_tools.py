@@ -170,7 +170,8 @@ import math
 from IPython.display import clear_output
 
 class Game(object):
-    def __init__(self, game_type=None, verbose=False, pause=False, player1=None, player2=None):
+    def __init__(self, game_type=None, verbose=False, pause=False, player1=None, player2=None, 
+                 model=tf.keras.Sequential()):
         self.verbose = verbose              # shows the grid during the game
         self.pause = pause                  # used when playing against AI to visualize its moves      
         self.flag = False                   # used to break the loop at the end of the game
@@ -183,18 +184,22 @@ class Game(object):
         if game_type=='user-user':
             p1 = HumanPlayer(name=player1, p=1)
             p2 = HumanPlayer(name=player2, p=-1)
-        
+
         elif game_type=='user-random':
             p1 = HumanPlayer(name=player1, p=1)
-            p2 = RandomPlayer(name=player2, p=-1)
-
-        elif game_type=='random-random':
-            p1 = RandomPlayer(name=player1, p=1)
             p2 = RandomPlayer(name=player2, p=-1)
 
         elif game_type=='user-simple':
             p1 = HumanPlayer(name=player1, p=1)
             p2 = SimplePlayer(name=player2, p=-1)
+        
+        elif game_type=='user-rnn':
+            p1 = HumanPlayer(name=player1, p=1)
+            p2 = RNNPlayer(name=player2, p=-1, model=model)
+
+        elif game_type=='random-random':
+            p1 = RandomPlayer(name=player1, p=1)
+            p2 = RandomPlayer(name=player2, p=-1)
 
         elif game_type=='simple-random':
             p1 = SimplePlayer(name=player1, p=1)
@@ -204,6 +209,14 @@ class Game(object):
             p1 = SimplePlayer(name=player1, p=1)
             p2 = SimplePlayer(name=player2, p=-1)
 
+        elif game_type=='rnn-random':
+            p1 = RNNPlayer(name=player1, p=1, model=model)
+            p2 = RandomPlayer(name=player2, p=-1)
+
+        elif game_type=='rnn-simple':
+            p1 = RNNPlayer(name=player1, p=1, model=model)
+            p2 = SimplePlayer(name=player2, p=-1)
+
         if p1.name == None:
             p1.name = f'{p1.player_type}_1'
         if p2.name == None:
@@ -211,6 +224,7 @@ class Game(object):
             
         # the starting player is always chosen at random 
         self.player_list = [p1, p2]
+        self.player_types = [p1.player_type, p2.player_type]
         np.random.shuffle(self.player_list)
 
         if self.verbose:
@@ -220,11 +234,23 @@ class Game(object):
     
     # this function runs through a game of Connect4 by first asking the player for a move, then updating the grid and,
     # finally, checking for a winner (eventually, it stops when reaching the total number of possible moves)
-    def play_game(self, record=True):
+    def play_game(self, record=True, mean_duration=21):
         self.move_counter = 0
+        # initialize the batch to make the prediction on
+        batch_np = np.zeros(shape=(32, mean_duration, self.Board.height * self.Board.width))
+        # the sequence is the board states sequence that gets updated during the game
+        sequence = batch_np[0]
         for _ in range(math.ceil(self.Board.n_positions / 2)):   # main loop, one iteration per move by both players
-            for player in self.player_list:            
+            for player in self.player_list:
                 self.move_counter += 1
+                # generate the batch tensor only if one of the player is a neural network
+                if 'RecurrentAI' in self.player_types:
+                    board = np.concatenate(self.Board.grid.transpose()) # 42 elements from the original grid
+                    sequence = np.vstack([sequence, board])[1:]         # we update the sequence with the last move,
+                                                                        # removing the first one
+                    batch_np[-1] = sequence                             # update the last sequence
+                    batch = tf.convert_to_tensor(batch_np)
+
                 # we save the grid before the grid update, so that the choice in the final dataset will
                 # correspond to the choice made on that particular grid
                 if record:
@@ -240,7 +266,9 @@ class Game(object):
                         self.Board.display_grid()
                         clear_output(wait=True)
                         if (self.pause) & (player.player_type != 'Human') : input()
-                    player.move(self.Board)
+                    if player.player_type == 'RecurrentAI':
+                        player.move(self.Board, batch)
+                    else: player.move(self.Board)
                     board_state = self.Board.update_grid(player)
                 if record:
                     self.game_record['choice'].append(player.choice)
@@ -267,17 +295,19 @@ class Game(object):
 #---------------------------------------------------------------------------------------------
 from tqdm import tqdm
 # simulating N AI-AI games
-def simulation(n=100, game_type='random-random', save_json=False):
+def simulation(n=100, game_type='random-random', model=tf.keras.Sequential(), 
+               mean_duration=21, save_json=False):
     dataset = pd.DataFrame()
     i = 0
     if n <= 1000:
         for i in tqdm(range(n), desc='Simulating', bar_format='{l_bar}{bar:15}{r_bar}{bar:-10b}'):
-            random_random = Game(game_type=game_type)       # initialize the game environment
-            random_random.play_game()                       # play the game
-            while not random_random.win:                    # repeat if the game ends in a draw
-                random_random = Game(game_type=game_type)
-                random_random.play_game()                   
-            game = random_random.save_game()        
+            game = Game(game_type=game_type, model=model)  # initialize the game environment
+            game.play_game(mean_duration=mean_duration)    # play the game
+            # repeat if the game ends in a draw
+            while not game.win: 
+                game = Game(game_type=game_type, model=model)
+                game.play_game(mean_duration=mean_duration)                   
+            game = game.save_game()        
             game['move'] = game.index 
             game.index = [i] * len(game)
             dataset = pd.concat([dataset, game])
@@ -286,26 +316,25 @@ def simulation(n=100, game_type='random-random', save_json=False):
         for _ in tqdm(range(int(n / 1000)), desc='Simulating', bar_format='{l_bar}{bar:15}{r_bar}{bar:-10b}'):
             df = pd.DataFrame()
             for i in range(1000):
-                random_random = Game(game_type=game_type)
-                random_random.play_game()
-                while not random_random.win:
-                    random_random = Game(game_type=game_type)
-                    random_random.play_game()       
-                game = random_random.save_game()
+                game = Game(game_type=game_type, model=model)
+                game.play_game(mean_duration=mean_duration)
+                while not game.win:
+                    game = Game(game_type=game_type, model=model)
+                    game.play_game(mean_duration=mean_duration)       
+                game = game.save_game()
                 game['move'] = game.index
                 game.index = [i + j] * len(game)
                 df = pd.concat([df, game])
             j += i + 1
             dataset = pd.concat([dataset, df])
-    # i decided to save the dataframe into .json format in order to preserve the dtype inside the dataframe,
+    # I decided to save the dataframe into .json format in order to preserve the dtype inside the dataframe,
     # since most of the values are arrays that get converted to strings using the default pd.to_csv() function
     if save_json:
         print('Saving: ...')
         # rearrange the columns order
-        dataset = dataset[['player', 'move', 'choice', 'col_0', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6']]
         dataset.reset_index().to_json(f'simulations/simulation_{game_type}_{n}.json')
         #dataset.to_csv(f'simulations/simulation_{game_type}_{n}.csv')
-    return dataset
+    return dataset[['player', 'move', 'choice', 'col_0', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6']]
 
 #---------------------------------------------------------------------------------------------
 def read_json(path):
@@ -314,3 +343,25 @@ def read_json(path):
     dataset.drop(columns=['index'], inplace=True)
     dataset.index = index
     return dataset
+
+#---------------------------------------------------------------------------------------------
+def save_model(model, path=''): # path example: 'folder/name' - without extension!
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open(f'{path}.json', 'w') as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(f'{path}.h5')
+    print('Model saved succesfully.')
+ 
+from keras.models import model_from_json
+def load_model(path):
+    # load json and create model
+    json_file = open(f'{path}.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model.load_weights(f'{path}.h5')
+    print('Model succesfully loaded.')
+    return loaded_model
