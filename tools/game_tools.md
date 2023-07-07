@@ -1,11 +1,12 @@
 ### Game Tools
 In this file you can find the whole building process of the game *Connect4*, from the implementation of the basic rules to the function that instantiates and simulates multiple games. You can also find the `HumanPlayer()` class, that gives the user the opportunity to play the game, as well as the basic hard-coded player class `RandomPlayer()`, which plays a random game strategy.\
+For the game's structure, I took inspiration from [this](https://github.com/t-brewer/connect4_CNN) public work.
 \
 \
 __*Player class*__\
 First of all, we need to create the `Player()` class: this is a parent class for all the future *player* objects, provinding the essential information required to update the board state, to distinguish the two players and to check who has won the game.\
 In fact, the class only contains the *constructor* function.\
-Every sub-class will inherit the previous features, as well as an additional function that determines the *child* player's next move.\
+Every sub-class will inherit the previous features, as well as an additional function that determines the *child* player's next move, stored in the variable called `choice`.\
 \
 __*Board class*__\
 Then, we need to create a `Board()` class. Its main functions are displaying the grid for the game, finding all the possible valid positions for the tokens, keeping track of the tokens positioning during the game, checking for a winner.\
@@ -24,15 +25,15 @@ __*Game engine*__\
 Now we need to create the object able to instantiate all the other objects (`Board()` and `Player()`'s child classes) in order to get a full game of *Connect4*, being it simulated or actually played by the users.\
 Note that this class requires a `game_type` string argument, defined as follows:
 1. *`user-user`*: classic game 1v1, played by human users to overcome the boredom of the NNs' training process,
-2. *`random-random`*: random player vs random player,
-3. *`user-random`*: user versus random player (used mainly for debugging and problem checking),
-4. *`user-simple`*: user versus simple hard-coded player,
-5. *`simple-random`*: simple hard-coded player versus random player,
-6. *`simple-simple`*: two simple hard-coded players playing against each other,
-7. *`rnn-random`*: recurrent network against random player,
-8. *`rnn-simple`*: recurrent network against simple hard-coded player,
-9. *`rnn-rnn`*: two recurrent networks against each other (the core of the training process),
-10. *`user-rnn`*: the final goal of this project $\rightarrow$ human player against a well-trained neural network.
+2. *`user-random`*: user versus random player (used mainly for debugging and problem checking),
+3. *`user-simple`*: user versus simple hard-coded player,
+4. *`user-rnn`*: the final goal of this project $\rightarrow$ human player against a well-trained neural network,
+5. *`random-random`*: random player vs random player,
+6. *`simple-random`*: simple hard-coded player versus random player,
+7. *`simple-simple`*: two simple hard-coded players playing against each other,
+8. *`rnn-random`*: recurrent network against random player,
+9. *`rnn-simple`*: recurrent network against simple hard-coded player,
+10. *`rnn-rnn`*: two recurrent networks against each other (the core of the training process).
 
 \
 __*Building the dataset*__\
@@ -40,3 +41,8 @@ To generate our training datasets, we only have to simulate the games multiple t
 During this part of the project, I encountered some troubles with the execution time: as you can see, building the dataset requires the concatenation of two dataframes and, as the loop goes on, the dataset gets bigger and bigger, resulting in a very slow compilation time, along with the inability for the `tqdm` bar to make a significative estimation of the remaining time.\
 To speed things up, I decided to split the process into sub-sets of 1000 simulations each, concatenating the results with the bigger dataset only at the end of these subsets, then refreshing the smaller one.\
 Despite not being a very elegant solution, it works quite well for this purpose.
+\
+\
+__*Saving and Loading the models*__\
+The last section is about saving and loading trained models inside the `models` folder.\
+<font color='orange'>Attention</font>: remember to *always* compile the model after loading it!

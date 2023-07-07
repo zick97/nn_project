@@ -296,7 +296,7 @@ class Game(object):
 from tqdm import tqdm
 # simulating N AI-AI games
 def simulation(n=100, game_type='random-random', model=tf.keras.Sequential(), 
-               mean_duration=21, save_json=False):
+               mean_duration=21, save_json=False, name=None):
     dataset = pd.DataFrame()
     i = 0
     if n <= 1000:
@@ -332,7 +332,10 @@ def simulation(n=100, game_type='random-random', model=tf.keras.Sequential(),
     if save_json:
         print('Saving: ...')
         # rearrange the columns order
-        dataset.reset_index().to_json(f'simulations/simulation_{game_type}_{n}.json')
+        if name == None:
+            dataset.reset_index().to_json(f'simulations/simulation_{game_type}_{n}.json')
+        else:
+            dataset.reset_index().to_json(f'{name}.json')
         #dataset.to_csv(f'simulations/simulation_{game_type}_{n}.csv')
     return dataset[['player', 'move', 'choice', 'col_0', 'col_1', 'col_2', 'col_3', 'col_4', 'col_5', 'col_6']]
 

@@ -148,3 +148,15 @@ def df_to_tensor(dataset):
     targets = tf.data.Dataset.from_tensor_slices(list(df['choice'].groupby(df.index).tail(1)))
     df = tf.data.Dataset.zip((features, targets))
     return df
+
+#---------------------------------------------------------------------------------------------
+def quickdraw_dataset(dataset, batch_size=32, shuffle_buffer_size=None, cache=False):
+    if cache:
+        # cache the dataset
+        dataset = dataset.cache()
+    if shuffle_buffer_size:
+        # shuffle the dataset's batches
+        dataset = dataset.shuffle(shuffle_buffer_size)
+    # batch the games into batches of length 32, meaning that each batch will contain 32 games
+    dataset = dataset.batch(batch_size) 
+    return dataset
