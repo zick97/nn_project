@@ -1,14 +1,8 @@
 # Neural Network Project
 ## Learning to play Connect4 using a Recurrent Neural Network
-This project focuses on the idea that the game of *Connect4* - as well as many other table or puzzle games - consists in just a sequence of moves. 
-To be exact, each player realizes his/her own idea of this sequence, deciding which move to make in order to win the game.\
-Thanks to this simple and straight-forward structure, I decided to evaluate the performance of various Machine Learning models at this poppular game, 
-seeing them just as normal players. The main objective is to train a Recurrent Neural Network (RNN), composed of convolutional layers too, in order to catch 
-short-term and long-term patterns in the game's board (positioning of the tokens).\
-\
-The main issue of this project is the dataset: to train a RNN (or any other model) we need to teach it the play style of a good player, otherwise the 
-model will learn sub-optimal game strategies. I then decided to hard-code a simple strategy and make the RNN learn from it. Then, simulating thousands of different games,
-I let two RNNs play against each other to generate a large dataset, perhaps containing good patterns and "intelligent" moves, repeating the process multiple times.\
-\
-The **results** are found in the `main.ipynb` file. For coding details and model architectures, feel free to read (and use) every other file in the repository. Detailed code
-descriptions and instructions can be found in the files named after the `.py` files, inside the `tools` folder.
+Recurrent Neural Networks are widely used today for various tasks: text classification, text generation, audio or video processing, time-series forecasting and many others.\
+The main advantage of Recurrent Networks is the ability of the recurrent neurons - fundamental components of the network - to be able to intercept patterns within data sequences with a precise ordering. Indeed, the applications mentioned above are characterised by sequential data.\
+This project stems precisely from the realisation that most games are made up of sequences of actions performed by players. These actions follow a precise order and, therefore, it is assumed that there is a pattern that determines future actions.\
+This observation gave rise to the idea of applying a Neural Network with a hybrid convolutional-recurrent architecture to games, in particular the popular board game Connect 4. After an initial phase of dataset realisation, various experiments were conducted to evaluate the network's performance: the results show a certain degree of learning on the part of the network, despite the severe computational limitations of the available hardware.
+The complete **results** are found in the `main.ipynb` file. For coding details and model architectures, feel free to read (and use) every other file in the repository.\
+Detailed code descriptions and instructions can be found in the files named after the `.py` files, inside the `tools` folder.
